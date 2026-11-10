@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#393C3F">
+  <title>TRC Television | Control de Cintillos</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ivory: #F1F1F2;
+      --burgundy: #9F2241;
+      --sand: #BAA88D;
+      --green: #235B4E;
+      --gray: #898A8D;
+      --charcoal: #393C3F;
+      --wine: #691C32;
+      --dark-sand: #AA9678;
+      --forest: #10312B;
+      --slate: #54565A;
+      --page: #202225;
+      --panel: #2b2e31;
+      --panel-raised: #323538;
+      --line: #ffffff19;
+      --muted: #c1c1c4;
+      --focus: #d3bda0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 32px 18px 24px;
+      color: var(--ivory);
+      background: radial-gradient(ellipse at 50% -18%, #691c3248 0, transparent 53%), var(--page);
+      font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+    button, input { font: inherit; }
+    .shell { width: min(100%, 680px); margin: 0 auto; }
+    .masthead { display:flex; align-items:center; gap:15px; padding: 4px 4px 22px; }
+    .brand-mark { width:51px; height:51px; flex:none; display:grid; place-items:center; border:1px solid #baa88d75; border-radius:15px; color:var(--ivory); background:linear-gradient(145deg,var(--wine),#401523); box-shadow:0 8px 26px #0005; font-weight:850; letter-spacing:-1.5px; font-size:19px; }
+    .brand-copy { min-width:0; }
+    .brand-name { margin:0; font-size:19px; font-weight:750; letter-spacing:.01em; }
+    .brand-description { margin:4px 0 0; color:#c5c2bf; font-size:12px; line-height:1.4; }
+    .eyebrow { margin:0 0 5px; color:var(--sand); font-size:10px; text-transform:uppercase; letter-spacing:.18em; font-weight:750; }
+    .header-status { margin-left:auto; display:flex; align-items:center; gap:8px; padding:8px 11px; border:1px solid var(--line); border-radius:999px; color:#dedede; background:#ffffff08; font-size:11px; white-space:nowrap; }
+    .status-dot { width:8px; height:8px; border-radius:50%; background:var(--gray); box-shadow:0 0 0 3px #898a8d24; }
+    .header-status.live .status-dot { background:#52c79a; box-shadow:0 0 0 3px #52c79a26; }
+    .header-status.live { color:#b9f1d8; border-color:#52c79a45; }
+    .panel { overflow:hidden; border:1px solid #ffffff1a; border-radius:18px; background:linear-gradient(160deg,#303336 0%,#282a2d 100%); box-shadow:0 20px 60px #0005; }
+    .panel-top { padding:23px 24px 20px; border-bottom:1px solid var(--line); }
+    .panel-top h1 { margin:0; font-size:22px; letter-spacing:-.025em; }
+    .panel-top p { margin:7px 0 0; color:var(--muted); font-size:13px; line-height:1.5; }
+    .content { padding:20px 24px 24px; }
+    .section { margin-bottom:18px; padding:17px; border:1px solid var(--line); border-radius:13px; background:#17191b36; }
+    .section:last-of-type { margin-bottom:0; }
+    .section-heading { display:flex; align-items:flex-start; gap:11px; margin-bottom:15px; }
+    .section-number { width:27px; height:27px; flex:none; display:grid; place-items:center; border-radius:8px; color:#f2dfe4; background:#9f224130; font-size:12px; font-weight:750; }
+    .section-title { margin:1px 0 4px; font-size:14px; font-weight:720; }
+    .section-description { margin:0; color:var(--muted); font-size:11px; line-height:1.45; }
+    .person-card { margin-top:10px; padding:13px; border:1px solid #ffffff20; border-radius:10px; background:#202225a8; transition:border-color .18s,background .18s; }
+    .person-card.selected { border-color:#baa88d9c; background:#baa88d0c; }
+    .person-select { display:flex; align-items:center; gap:10px; min-height:25px; margin:0 0 12px; color:#f2f0ed; font-size:12px; font-weight:650; cursor:pointer; }
+    .person-select input { width:17px; height:17px; margin:0; accent-color:var(--burgundy); }
+    .field-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .field { min-width:0; }
+    .field label, .range-label, .field-label { display:flex; justify-content:space-between; gap:10px; margin-bottom:7px; color:#d5d4d2; font-size:11px; font-weight:600; }
+    input[type="text"], input[type="email"], input[type="password"], input[type="url"] { display:block; width:100%; min-height:42px; padding:10px 12px; border:1px solid #ffffff25; border-radius:8px; outline:none; color:var(--ivory); background:#191b1e; font-size:13px; transition:border-color .18s,box-shadow .18s; }
+    input::placeholder { color:#898a8d; }
+    input:focus { border-color:var(--focus); box-shadow:0 0 0 3px #baa88d20; }
+    .guest-list:empty::after { content:"Aún no hay invitados guardados. Usa «Agregar invitado» para crear uno."; display:block; padding:13px 10px 3px; color:#aeadab; font-size:12px; line-height:1.5; text-align:center; }
+    .button-row { display:flex; gap:10px; margin-top:13px; }
+    .button { min-height:41px; display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 14px; border:1px solid transparent; border-radius:8px; cursor:pointer; color:#fff; font-size:12px; font-weight:700; transition:transform .15s,filter .15s,border-color .15s; }
+    .button:hover { filter:brightness(1.09); }
+    .button:active { transform:translateY(1px); }
+    .button:disabled { opacity:.55; cursor:wait; }
+    .button-secondary { border-color:#ffffff20; background:#ffffff0b; color:#eeece9; }
+    .button-secondary:hover { border-color:#baa88d80; }
+    .button-primary { background:linear-gradient(135deg,#9f2241,#7b1c35); box-shadow:0 5px 16px #691c3245; }
+    .button-danger { border-color:#ffffff18; background:#ffffff08; color:#e4c6cc; }
+    .button-login { background:var(--slate); }
+    .button-wide { flex:1; }
+    .remove-button { padding:6px 9px; color:#e8b6c0; font-size:11px; }
+    .login-fields { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+    .login-actions { display:flex; align-items:end; }
+    .login-actions .button { width:100%; }
+    .asset-note,.helper { margin:8px 0 0; color:#aaa9a7; font-size:11px; line-height:1.5; }
+    input[type="file"] { max-width:100%; margin-top:10px; color:#d3d1ce; font-size:11px; }
+    input[type="file"]::file-selector-button { margin-right:9px; padding:8px 10px; border:1px solid #ffffff25; border-radius:7px; color:var(--ivory); background:#ffffff0b; cursor:pointer; }
+    input[type="range"] { width:100%; accent-color:var(--sand); }
+    .range-block + .range-block { margin-top:15px; }
+    .range-value { color:#ead9c4; font-variant-numeric:tabular-nums; }
+    .position-controls { display:grid; grid-template-columns:repeat(3,44px); grid-template-rows:repeat(2,39px); justify-content:center; gap:5px; }
+    .position-controls .button { min-height:0; padding:4px; border-color:#ffffff16; background:#ffffff0b; font-size:17px; }
+    #move-up { grid-column:2;grid-row:1 } #move-left { grid-column:1;grid-row:2 } #move-down { grid-column:2;grid-row:2 } #move-right { grid-column:3;grid-row:2 }
+    .readout { margin-top:10px; color:#e5d4bf; text-align:center; font-size:11px; font-variant-numeric:tabular-nums; }
+    .actions { display:grid; grid-template-columns:1.25fr 1fr; gap:10px; margin-top:20px; }
+    .actions .button { min-height:48px; font-size:13px; }
+    .actions .button-primary { background:linear-gradient(135deg,var(--green),#19483e); box-shadow:0 6px 20px #10312b55; }
+    .actions .button-danger { border-color:#9f22414a; color:#f1d6dc; background:linear-gradient(135deg,#691c322b,#691c3212); }
+    .status { min-height:19px; margin-top:17px; color:#d2cfcb; text-align:center; font-size:12px; }
+    .sync { margin-top:5px; color:#a8a7a5; text-align:center; font-size:10px; font-variant-numeric:tabular-nums; }
+    .footer { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:17px 5px 0; color:#aeadab; font-size:10px; }
+    .footer strong { color:#d8c6b0; font-weight:650; }
+    @media(max-width:560px) { body{padding:18px 11px}.masthead{gap:11px;padding-bottom:17px}.brand-mark{width:44px;height:44px;border-radius:13px;font-size:17px}.brand-name{font-size:16px}.brand-description{font-size:10px}.header-status{padding:7px 9px;font-size:10px}.panel{border-radius:14px}.panel-top{padding:19px 17px 17px}.panel-top h1{font-size:19px}.content{padding:15px}.section{padding:14px;margin-bottom:13px}.field-grid,.login-fields{grid-template-columns:1fr;gap:10px}.login-actions .button{min-height:40px}.actions{grid-template-columns:1fr 1fr}.footer{font-size:9px} }
+    @media(max-width:360px) { .header-status{font-size:0;gap:7px}.status-dot{width:9px;height:9px}.actions{grid-template-columns:1fr}.footer{align-items:flex-start;flex-direction:column;gap:5px} }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <div class="brand-mark" aria-hidden="true">TRC</div>
+      <div class="brand-copy">
+        <p class="eyebrow">Control de transmisión</p>
+        <p class="brand-name">TRC Television</p>
+        <p class="brand-description">Sistema de Televisión y Radio de Campeche</p>
+      </div>
+      <div class="header-status" id="header-status"><span class="status-dot"></span><span id="header-status-label">Fuera de aire</span></div>
+    </header>
+
+    <section class="panel" aria-label="Panel de control de cintillos">
+      <div class="panel-top">
+        <h1>Control de cintillos</h1>
+        <p>Selecciona al conductor o invitado que indique el switcher. Solo esa persona saldrá al aire.</p>
+      </div>
+      <div class="content">
+        <section class="section" aria-labelledby="people-heading">
+          <div class="section-heading"><span class="section-number">01</span><div><h2 class="section-title" id="people-heading">Personas</h2><p class="section-description">Elige una persona para el próximo cintillo. Las demás permanecen guardadas.</p></div></div>
+          <div class="person-card" id="host-card">
+            <label class="person-select" for="select-host"><input type="radio" name="selected-person" id="select-host"><span>Conductor/a</span></label>
+            <div class="field-grid">
+              <div class="field"><label for="titulo">Nombre</label><input type="text" id="titulo" maxlength="120" placeholder="Nombre del conductor/a" autocomplete="name"></div>
+              <div class="field"><label for="subtitulo">Cargo</label><input type="text" id="subtitulo" maxlength="240" placeholder="Conductor/a"></div>
+            </div>
+          </div>
+          <div class="guest-list" id="guest-list"></div>
+          <div class="button-row"><button class="button button-secondary button-wide" id="add-guest" type="button">＋ Agregar invitado</button><button class="button button-secondary button-wide" id="save-people" type="button">Guardar lista</button></div>
+        </section>
+
+        <section class="section" aria-labelledby="design-heading">
+          <div class="section-heading"><span class="section-number">02</span><div><h2 class="section-title" id="design-heading">Diseño y tipografía</h2><p class="section-description">Configura el fondo y el tamaño del texto del cintillo.</p></div></div>
+          <div class="field"><label for="bg-url">URL de imagen de fondo</label><input type="url" id="bg-url" placeholder="https://.../cintillo.png"></div>
+          <p class="asset-note">También puedes subir una imagen. Se guardará en el bucket público «cintillos» de Supabase.</p>
+          <input type="file" id="bg-file" accept="image/png,image/jpeg,image/webp" aria-label="Seleccionar imagen de fondo">
+          <div class="range-block" style="margin-top:17px"><label class="range-label" for="name-size">Tamaño del nombre <span class="range-value" id="name-size-value">38 px</span></label><input type="range" id="name-size" min="12" max="80" value="38"></div>
+          <div class="range-block"><label class="range-label" for="title-size">Tamaño del cargo <span class="range-value" id="title-size-value">22 px</span></label><input type="range" id="title-size" min="10" max="60" value="22"></div>
+        </section>
+
+        <section class="section" aria-labelledby="position-heading">
+          <div class="section-heading"><span class="section-number">03</span><div><h2 class="section-title" id="position-heading">Posición en pantalla</h2><p class="section-description">Ajusta el texto sobre el diseño de OBS; cada toque mueve 1%.</p></div></div>
+          <div class="position-controls" aria-label="Ajustar posición del texto"><button class="button" id="move-up" type="button" aria-label="Subir">↑</button><button class="button" id="move-left" type="button" aria-label="Mover a la izquierda">←</button><button class="button" id="move-down" type="button" aria-label="Bajar">↓</button><button class="button" id="move-right" type="button" aria-label="Mover a la derecha">→</button></div>
+          <div class="readout" id="position-readout">X: 20% · Y: 82%</div>
+        </section>
+
+        <section class="section" aria-labelledby="account-heading">
+          <div class="section-heading"><span class="section-number">04</span><div><h2 class="section-title" id="account-heading">Almacenamiento de imágenes</h2><p class="section-description">Inicia sesión en Supabase para subir fondos desde este dispositivo.</p></div></div>
+          <div class="login-fields"><div class="field"><label for="supabase-email">Correo</label><input type="email" id="supabase-email" autocomplete="email" placeholder="usuario@dominio.com"></div><div class="field"><label for="supabase-password">Contraseña</label><input type="password" id="supabase-password" autocomplete="current-password" placeholder="••••••••"></div></div>
+          <div class="button-row"><button class="button button-login" id="login-button" type="button">Iniciar sesión en Supabase</button></div>
+        </section>
+
+        <div class="actions"><button class="button button-primary" id="show-button" type="button">●&nbsp; Enviar al aire</button><button class="button button-danger" id="hide-button" type="button">Ocultar cintillo</button></div>
+        <div class="status" id="status-text" role="status" aria-live="polite">Conectando con el estado del programa…</div>
+        <div class="sync" id="sync-text">Última sincronización: --:--:--</div>
+      </div>
+    </section>
+    <footer class="footer"><span>TRC Television <span aria-hidden="true">·</span> Campeche</span><span>Desarrollado por <strong>NahuatLabs</strong></span></footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const API_URL = 'https://api.npoint.io/2b81ca901938404ea4e7';
+    const SUPABASE_URL = 'https://aejpbwvqmcqcnjzugrmf.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_IUsorXEWq5JXnZOcUy3Gsw_eEwsUN-F';
+    const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) || null;
+    const $ = id => document.getElementById(id);
+    const guestList = $('guest-list');
+    let guests = [], selectedPersonaId = 'conductor', onAirPersonaId = 'conductor';
+    let currentX = 20, currentY = 82, currentActive = false, currentNameSize = 38, currentTitleSize = 22, isBusy = false;
+
+    function setStatus(message, color = '#d2cfcb') { $('status-text').textContent = message; $('status-text').style.color = color; }
+    function updateHeaderStatus() {
+      const header = $('header-status');
+      header.classList.toggle('live', currentActive);
+      $('header-status-label').textContent = currentActive ? 'Al aire' : 'Fuera de aire';
+    }
+    function markSynced() {
+      $('sync-text').textContent = 'Última sincronización: ' + new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    }
+    function updateReadouts() {
+      $('position-readout').textContent = `X: ${currentX}% · Y: ${currentY}%`;
+      $('name-size-value').textContent = currentNameSize + ' px';
+      $('title-size-value').textContent = currentTitleSize + ' px';
+    }
+    function syncSelectionStyles() {
+      $('host-card').classList.toggle('selected', selectedPersonaId === 'conductor');
+      guestList.querySelectorAll('.person-card').forEach(card => card.classList.toggle('selected', card.dataset.personId === selectedPersonaId));
+    }
+    function renderGuests() {
+      guestList.replaceChildren();
+      guests.forEach((guest, index) => {
+        const card = document.createElement('div'); card.className = 'person-card'; card.dataset.personId = guest.id;
+        const selectLabel = document.createElement('label'); selectLabel.className = 'person-select';
+        const radio = document.createElement('input'); radio.type = 'radio'; radio.name = 'selected-person'; radio.id = 'select-' + guest.id; radio.checked = selectedPersonaId === guest.id;
+        radio.addEventListener('change', () => { selectedPersonaId = guest.id; syncSelectionStyles(); });
+        const labelText = document.createElement('span'); labelText.textContent = `Invitado ${index + 1}`;
+        selectLabel.append(radio, labelText);
+        const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'button button-secondary remove-button'; remove.textContent = 'Quitar';
+        remove.setAttribute('aria-label', `Quitar invitado ${index + 1}`);
+        remove.addEventListener('click', () => {
+          guests = guests.filter(item => item.id !== guest.id);
+          if (selectedPersonaId === guest.id) { selectedPersonaId = 'conductor'; $('select-host').checked = true; }
+          if (onAirPersonaId === guest.id) { onAirPersonaId = 'conductor'; }
+          renderGuests();
+        });
+        selectLabel.append(remove);
+        const grid = document.createElement('div'); grid.className = 'field-grid';
+        const nameField = document.createElement('div'); nameField.className = 'field';
+        const nameLabel = document.createElement('label'); nameLabel.textContent = 'Nombre';
+        const nameInput = document.createElement('input'); nameInput.type = 'text'; nameInput.maxLength = 120; nameInput.placeholder = 'Nombre del invitado'; nameInput.value = guest.nombre || '';
+        nameInput.addEventListener('input', () => { guest.nombre = nameInput.value; });
+        nameField.append(nameLabel, nameInput);
+        const titleField = document.createElement('div'); titleField.className = 'field';
+        const titleLabel = document.createElement('label'); titleLabel.textContent = 'Cargo';
+        const titleInput = document.createElement('input'); titleInput.type = 'text'; titleInput.maxLength = 240; titleInput.placeholder = 'Cargo o descripción'; titleInput.value = guest.cargo || '';
+        titleInput.addEventListener('input', () => { guest.cargo = titleInput.value; });
+        titleField.append(titleLabel, titleInput); grid.append(nameField, titleField); card.append(selectLabel, grid); guestList.append(card);
+      });
+      syncSelectionStyles();
+    }
+    function people() {
+      return [
+        { id: 'conductor', tipo: 'conductor', nombre: $('titulo').value.trim(), cargo: $('subtitulo').value.trim() },
+        ...guests.map(guest => ({ id: guest.id, tipo: 'invitado', nombre: (guest.nombre || '').trim(), cargo: (guest.cargo || '').trim() }))
+      ];
+    }
+    function personById(id) { const list = people(); return list.find(person => person.id === id) || list[0]; }
+    function payload(active = currentActive, liveId = onAirPersonaId) {
+      const live = personById(liveId);
+      return {
+        titulo: live?.nombre || '', subtitulo: live?.cargo || '', personas: people(), selectedPersonaId,
+        onAirPersonaId: liveId, bgImage: $('bg-url').value.trim(), posX: currentX, posY: currentY,
+        fontSizeNombre: currentNameSize, fontSizeCargo: currentTitleSize, activo: active
+      };
+    }
+    async function saveState(data, message) {
+      if (isBusy) return;
+      isBusy = true;
+      ['show-button', 'hide-button', 'save-people', 'add-guest'].forEach(id => $(id).disabled = true);
+      setStatus('Guardando cambios…', '#d2bda3');
+      try {
+        const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(data), cache: 'no-store' });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        currentActive = data.activo === true; onAirPersonaId = data.onAirPersonaId || onAirPersonaId;
+        updateHeaderStatus(); markSynced(); setStatus(message, currentActive ? '#a7e2c6' : '#c7c7c8');
+      } catch (error) {
+        console.error('No se pudo guardar:', error); setStatus('No se pudo guardar (' + (error.message || 'error de red') + ')', '#ef9aa9');
+      } finally {
+        isBusy = false;
+        ['show-button', 'hide-button', 'save-people', 'add-guest'].forEach(id => $(id).disabled = false);
+      }
+    }
+    async function loadState() {
+      try {
+        const response = await fetch(API_URL + '?t=' + Date.now(), { cache: 'no-store', headers: { 'Accept': 'application/json' } });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const data = await response.json();
+        const savedPeople = Array.isArray(data.personas) ? data.personas : [];
+        const host = savedPeople.find(person => person.tipo === 'conductor' || person.id === 'conductor');
+        $('titulo').value = host?.nombre ?? (typeof data.titulo === 'string' ? data.titulo : '');
+        $('subtitulo').value = host?.cargo ?? (typeof data.subtitulo === 'string' ? data.subtitulo : '');
+        guests = savedPeople.filter(person => person !== host && person.tipo !== 'conductor' && person.id !== 'conductor').map((person, index) => ({ id: person.id || 'guest-' + index, nombre: person.nombre || '', cargo: person.cargo || '' }));
+        currentX = Number.isFinite(Number(data.posX)) ? Math.min(95, Math.max(0, Number(data.posX))) : 20;
+        currentY = Number.isFinite(Number(data.posY)) ? Math.min(95, Math.max(0, Number(data.posY))) : 82;
+        currentNameSize = Number.isFinite(Number(data.fontSizeNombre)) ? Math.min(80, Math.max(12, Number(data.fontSizeNombre))) : 38;
+        currentTitleSize = Number.isFinite(Number(data.fontSizeCargo)) ? Math.min(60, Math.max(10, Number(data.fontSizeCargo))) : 22;
+        $('name-size').value = currentNameSize; $('title-size').value = currentTitleSize;
+        $('bg-url').value = typeof data.bgImage === 'string' ? data.bgImage : '';
+        currentActive = data.activo === true; onAirPersonaId = data.onAirPersonaId || 'conductor'; selectedPersonaId = data.selectedPersonaId || onAirPersonaId;
+        if (selectedPersonaId !== 'conductor' && !guests.some(guest => guest.id === selectedPersonaId)) selectedPersonaId = 'conductor';
+        $('select-host').checked = selectedPersonaId === 'conductor'; renderGuests(); updateReadouts(); updateHeaderStatus(); markSynced();
+        const livePerson = savedPeople.find(person => person.id === onAirPersonaId);
+        setStatus(currentActive ? 'Al aire: ' + (livePerson?.nombre || data.titulo || 'persona seleccionada') : 'Cintillo oculto', currentActive ? '#a7e2c6' : '#c7c7c8');
+      } catch (error) {
+        console.error('No se pudo cargar:', error); setStatus('No se pudo cargar el estado. Revisa la conexión.', '#ef9aa9');
+      }
+    }
+    function move(dx, dy) {
+      currentX = Math.min(95, Math.max(0, currentX + dx)); currentY = Math.min(95, Math.max(0, currentY + dy)); updateReadouts();
+      saveState(payload(), 'Posición guardada.');
+    }
+
+    $('select-host').addEventListener('change', () => { selectedPersonaId = 'conductor'; syncSelectionStyles(); });
+    $('add-guest').addEventListener('click', () => {
+      const id = 'guest-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+      guests.push({ id, nombre: '', cargo: '' }); selectedPersonaId = id; renderGuests();
+      guestList.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    $('save-people').addEventListener('click', () => saveState(payload(currentActive, onAirPersonaId), 'Lista guardada; el cintillo actual no cambia.'));
+    $('show-button').addEventListener('click', () => {
+      const selected = personById(selectedPersonaId);
+      if (!selected || (!selected.nombre && !selected.cargo)) { setStatus('Completa el nombre o cargo de la persona seleccionada.', '#ef9aa9'); return; }
+      onAirPersonaId = selectedPersonaId; saveState(payload(true, onAirPersonaId), 'Al aire: ' + (selected.nombre || selected.cargo));
+    });
+    $('hide-button').addEventListener('click', () => saveState(payload(false, onAirPersonaId), 'Cintillo oculto; las personas quedaron guardadas.'));
+    $('move-up').addEventListener('click', () => move(0, -1)); $('move-down').addEventListener('click', () => move(0, 1));
+    $('move-left').addEventListener('click', () => move(-1, 0)); $('move-right').addEventListener('click', () => move(1, 0));
+    $('name-size').addEventListener('input', event => { currentNameSize = Number(event.target.value); updateReadouts(); });
+    $('title-size').addEventListener('input', event => { currentTitleSize = Number(event.target.value); updateReadouts(); });
+    $('name-size').addEventListener('change', () => saveState(payload(), 'Tamaño del nombre guardado.'));
+    $('title-size').addEventListener('change', () => saveState(payload(), 'Tamaño del cargo guardado.'));
+    $('login-button').addEventListener('click', async () => {
+      if (!supabaseClient) { setStatus('No cargó Supabase. Recarga la página.', '#ef9aa9'); return; }
+      const email = $('supabase-email').value.trim(), password = $('supabase-password').value;
+      if (!email || !password) { setStatus('Escribe correo y contraseña.', '#ef9aa9'); return; }
+      try {
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error; setStatus('Sesión de Supabase activa.', '#a7e2c6');
+      } catch (error) { console.error('Error login:', error); setStatus('No se pudo iniciar sesión. Revisa el correo y la contraseña.', '#ef9aa9'); }
+    });
+    $('bg-file').addEventListener('change', async event => {
+      const file = event.target.files?.[0]; if (!file) return;
+      if (!supabaseClient) { setStatus('Supabase no está disponible.', '#ef9aa9'); return; }
+      try {
+        setStatus('Subiendo imagen…', '#d2bda3');
+        const safeName = Date.now() + '-' + file.name.replace(/\s+/g, '-');
+        const { data, error } = await supabaseClient.storage.from('cintillos').upload(safeName, file, { cacheControl: '3600', upsert: false });
+        if (error) throw error;
+        $('bg-url').value = `${SUPABASE_URL}/storage/v1/object/public/cintillos/${data.path}`;
+        setStatus('Imagen subida. Guarda la lista o envía el cintillo para guardar la URL.', '#d2bda3');
+      } catch (error) { console.error('Error de subida:', error); setStatus('No se pudo subir. Revisa el bucket y los permisos de «cintillos».', '#ef9aa9'); }
+    });
+    loadState();
+  </script>
+</body>
+</html>
